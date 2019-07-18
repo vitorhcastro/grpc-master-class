@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/vitorhcastro/grpc-master-class/calculator/calculatorpb"
 	"google.golang.org/grpc"
@@ -18,7 +20,11 @@ func main() {
 	defer cc.Close()
 
 	c := calculatorpb.NewCalculatorServiceClient(cc)
-	doSum(c, 1, 2)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for {
+		doSum(c, r.Int63()%10000, r.Int63()%10000)
+		time.Sleep(time.Duration(r.Int63()) % 10000)
+	}
 }
 
 func doSum(c calculatorpb.CalculatorServiceClient, first int64, second int64) {
