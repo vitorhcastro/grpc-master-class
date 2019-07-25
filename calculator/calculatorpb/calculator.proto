@@ -12,7 +12,14 @@ message CalculatorRequest { Operation operation = 1; }
 
 message CalculatorResponse { int64 result = 1; }
 
+message PrimeNumberDecompositionRequest { int64 number = 1; }
+
+message PrimeNumberDecompositionResponse { int64 result = 1; }
+
 service CalculatorService {
   // Unary
   rpc Sum(CalculatorRequest) returns (CalculatorResponse) {};
+
+  // Streaming Server
+  rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse) {};
 }

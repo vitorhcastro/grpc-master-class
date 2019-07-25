@@ -22,6 +22,24 @@ func (*server) Sum(ctx context.Context, req *calculatorpb.CalculatorRequest) (*c
 	return res, nil
 }
 
+func (*server) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberDecompositionRequest, stream calculatorpb.CalculatorService_PrimeNumberDecompositionServer) error {
+	log.Printf("PrimeNumberDecomposition function was invoked with %v", req)
+	number := req.GetNumber()
+	var k int64 = 2
+	for number > 1 {
+		if number % k == 0 {
+			number /= k
+			res := &calculatorpb.PrimeNumberDecompositionResponse{
+				Result: k,
+			}
+			stream.Send(res)
+		} else {
+			k++
+		}
+	}
+	return nil
+}
+
 func main() {
 	log.Println("CALCULATOR SERVER STARTED")
 
