@@ -7,6 +7,9 @@ import (
 	"log"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/vitorhcastro/grpc-master-class/calculator/calculatorpb"
 	"google.golang.org/grpc"
 )
@@ -27,7 +30,44 @@ func main() {
 
 	// doCalculateAverage(c, 1, 2, 3, 4)
 
-	doFindMaximum(c, 1, 5, 3, 6, 2, 20)
+	// doFindMaximum(c, 1, 5, 3, 6, 2, 20)
+
+	doSquareRoot(c, 25)
+
+	doSquareRoot(c, -25)
+}
+
+func doSquareRoot(c calculatorpb.CalculatorServiceClient, number int64) {
+	fmt.Println("---------------------------------------------------------------------------")
+	log.Printf("Starting to do a SquareRoot RPC with number %v\n", number)
+	fmt.Println()
+
+	req := &calculatorpb.SquareRootRequest{
+		Number: number,
+	}
+	res, err := c.SquareRoot(context.Background(), req)
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			fmt.Println(respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("We propably sent a negative number")
+			}
+		} else {
+			log.Fatalf("Error while calling SquareRoot RPC: %v", err)
+		}
+
+		fmt.Println()
+		log.Println("Ending SquareRoot RPC")
+		fmt.Println("---------------------------------------------------------------------------")
+		return
+	}
+	log.Printf("Response from SquareRoot: %v", res.GetNumberRoot())
+
+	fmt.Println()
+	log.Println("Ending SquareRoot RPC")
+	fmt.Println("---------------------------------------------------------------------------")
 }
 
 func doFindMaximum(c calculatorpb.CalculatorServiceClient, numbers ...int64) {
