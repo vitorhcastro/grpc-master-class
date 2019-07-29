@@ -16,10 +16,19 @@ message PrimeNumberDecompositionRequest { int64 number = 1; }
 
 message PrimeNumberDecompositionResponse { int64 result = 1; }
 
+message CalculateAverageRequest { int64 number = 1; }
+
+message CalculateAverageResponse { double result = 1; }
+
 service CalculatorService {
   // Unary
   rpc Sum(CalculatorRequest) returns (CalculatorResponse) {};
 
   // Streaming Server
-  rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse) {};
+  rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest)
+      returns (stream PrimeNumberDecompositionResponse) {};
+
+  // Streaming Client
+  rpc CalculateAverage(stream CalculateAverageRequest)
+      returns (CalculateAverageResponse) {};
 }

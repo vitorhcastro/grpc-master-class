@@ -23,7 +23,40 @@ func main() {
 	c := calculatorpb.NewCalculatorServiceClient(cc)
 	// doSum(c, 1, 2)
 
-	doPrimeDecomposition(c, 120)
+	// doPrimeDecomposition(c, 120)
+
+	doCalculateAverage(c, 1, 2, 3, 4)
+}
+
+func doCalculateAverage(c calculatorpb.CalculatorServiceClient, numbers ...int64) {
+	fmt.Println("---------------------------------------------------------------------------")
+	log.Println("Starting CalculateAverage RPC")
+	fmt.Println()
+
+	stream, err := c.CalculateAverage(context.Background())
+	if err != nil {
+		log.Fatalf("error while calling CalculateAverage: %v", err)
+	}
+
+	for _, number := range numbers {
+		req := &calculatorpb.CalculateAverageRequest{
+			Number: number,
+		}
+		log.Printf("Sending request %v", req)
+		stream.Send(req)
+		time.Sleep(1000 * time.Millisecond)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("error while receiving response from CalculateAverage: %v", err)
+	}
+
+	log.Println(res)
+
+	fmt.Println()
+	log.Println("Ending CalculateAverage RPC")
+	fmt.Println("---------------------------------------------------------------------------")
 }
 
 func doPrimeDecomposition(c calculatorpb.CalculatorServiceClient, number int64) {
