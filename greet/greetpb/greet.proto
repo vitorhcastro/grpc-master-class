@@ -20,13 +20,22 @@ message LongGreetRequest { Greeting greeting = 1; }
 
 message LongGreetResponse { string result = 1; }
 
+message GreetEveryoneRequest { Greeting greeting = 1; }
+
+message GreetEveryoneResponse { string result = 1; }
+
 service GreetService {
   // Unary
   rpc Greet(GreetRequest) returns (GreetResponse) {};
 
   // Streaming Server
-  rpc GreetManyTimes(GreetManyTimesRequest) returns (stream GreetManyTimesResponse) {};
+  rpc GreetManyTimes(GreetManyTimesRequest)
+      returns (stream GreetManyTimesResponse) {};
 
   // Streaming Client
   rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
+
+  // BiDi Streaming
+  rpc GreetEveryone(stream GreetEveryoneRequest)
+      returns (stream GreetEveryoneResponse) {};
 }
