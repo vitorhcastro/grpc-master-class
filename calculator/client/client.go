@@ -25,7 +25,56 @@ func main() {
 
 	// doPrimeDecomposition(c, 120)
 
-	doCalculateAverage(c, 1, 2, 3, 4)
+	// doCalculateAverage(c, 1, 2, 3, 4)
+
+	doFindMaximum(c, 1, 5, 3, 6, 2, 20)
+}
+
+func doFindMaximum(c calculatorpb.CalculatorServiceClient, numbers ...int64) {
+	fmt.Println("---------------------------------------------------------------------------")
+	log.Println("Starting FindMaximum RPC")
+	fmt.Println()
+
+	stream, err := c.FindMaximum(context.Background())
+	if err != nil {
+		log.Fatalf("error while calling FindMaximum: %v", err)
+	}
+
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, number := range numbers {
+			req := &calculatorpb.FindMaximumRequest{
+				Number: number,
+			}
+			log.Printf("Sending request: %v", req)
+			stream.Send(req)
+			time.Sleep(1000 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Fatalf("error while receiving response from FindMaximum: %v", err)
+			}
+
+			log.Printf("Received response: %v", res)
+		}
+		close(waitc)
+	}()
+
+	<-waitc
+
+	fmt.Println()
+	log.Println("Ending FindMaximum RPC")
+	fmt.Println("---------------------------------------------------------------------------")
 }
 
 func doCalculateAverage(c calculatorpb.CalculatorServiceClient, numbers ...int64) {

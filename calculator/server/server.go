@@ -40,6 +40,7 @@ func (*server) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberDecompositi
 	}
 	return nil
 }
+
 func (*server) CalculateAverage(stream calculatorpb.CalculatorService_CalculateAverageServer) error {
 	log.Println("CalculateAverage function was invoked")
 	result := 0.0
@@ -58,6 +59,34 @@ func (*server) CalculateAverage(stream calculatorpb.CalculatorService_CalculateA
 
 		result += float64(req.GetNumber())
 		count++
+	}
+}
+
+func (*server) FindMaximum(stream calculatorpb.CalculatorService_FindMaximumServer) error {
+	log.Println("FindMaximum function was invoked")
+	var maximum int64
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("erro while reading client stream: %v", err)
+			return err
+		}
+		number := req.GetNumber()
+
+		if maximum < number {
+			maximum = number
+			err = stream.Send(&calculatorpb.FindMaximumResponse{
+				Result: number,
+			})
+			if err != nil {
+				log.Fatalf("error while sending data to client: %v", err)
+				return err
+			}
+		}
 	}
 }
 
