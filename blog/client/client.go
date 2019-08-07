@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 
 	"github.com/vitorhcastro/grpc-master-class/blog/blogpb"
@@ -44,6 +45,8 @@ func main() {
 
 	doDelete(c, "doesNotExist")
 	doDelete(c, res.GetBlog().GetId())
+
+	doList(c)
 }
 
 func doCreate(c blogpb.BlogServiceClient, blog *blogpb.Blog) *blogpb.CreateBlogResponse {
@@ -104,4 +107,23 @@ func doDelete(c blogpb.BlogServiceClient, blogID string) {
 		return
 	}
 	log.Printf("Blog was deleted: %v", res)
+}
+
+func doList(c blogpb.BlogServiceClient) {
+	log.Println("Listing blogs")
+
+	resStream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+	if err != nil {
+		log.Fatalf("Error while calling ListBlog RPC: %v", err)
+	}
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Something happened: %v", err)
+		}
+		log.Printf("Response from ListBlog: %v", msg.GetBlog())
+	}
 }
