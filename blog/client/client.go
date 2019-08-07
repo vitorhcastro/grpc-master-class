@@ -39,7 +39,11 @@ func main() {
 		Title:    "A better title for a blog",
 		Content:  "Content of the first blog with a little more content",
 	}
+
 	doUpdate(c, newBlog)
+
+	doDelete(c, "doesNotExist")
+	doDelete(c, res.GetBlog().GetId())
 }
 
 func doCreate(c blogpb.BlogServiceClient, blog *blogpb.Blog) *blogpb.CreateBlogResponse {
@@ -85,4 +89,19 @@ func doUpdate(c blogpb.BlogServiceClient, blog *blogpb.Blog) {
 		log.Fatalf("Unexpected error: %v", err)
 	}
 	log.Printf("Blog has been updated: %v", res)
+}
+
+func doDelete(c blogpb.BlogServiceClient, blogID string) {
+	log.Println("Deleting a blog")
+
+	req := &blogpb.DeleteBlogRequest{
+		BlogId: blogID,
+	}
+
+	res, err := c.DeleteBlog(context.Background(), req)
+	if err != nil {
+		log.Printf("Error happened while deleting: %v", err)
+		return
+	}
+	log.Printf("Blog was deleted: %v", res)
 }

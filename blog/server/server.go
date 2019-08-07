@@ -31,6 +31,15 @@ type blogItem struct {
 	Title    string             `bson:"title"`
 }
 
+func dataToBlogDb(data *blogItem) *blogpb.Blog {
+	return &blogpb.Blog{
+		Id:       data.ID.Hex(),
+		AuthorId: data.AuthorID,
+		Title:    data.Title,
+		Content:  data.Content,
+	}
+}
+
 func (*server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) (*blogpb.CreateBlogResponse, error) {
 	log.Printf("Create blog request: %v", req)
 
@@ -96,15 +105,6 @@ func (*server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blog
 	}, nil
 }
 
-func dataToBlogDb(data *blogItem) *blogpb.Blog{
-	return &blogpb.Blog{
-		Id:       data.ID.Hex(),
-		AuthorId: data.AuthorID,
-		Title:    data.Title,
-		Content:  data.Content,
-	}
-}
-
 func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error) {
 	log.Printf("Update blog request: %v", req)
 	blog := req.GetBlog()
@@ -142,6 +142,39 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 
 	return &blogpb.UpdateBlogResponse{
 		Blog: dataToBlogDb(data),
+	}, nil
+}
+
+func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error) {
+	log.Printf("Read blog request: %v", req)
+
+	blogID := req.GetBlogId()
+
+	oid, err := primitive.ObjectIDFromHex(blogID)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprint("Cannot parse ID"),
+		)
+	}
+
+	filter := bson.M{"_id": oid}
+	res, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Cannot delete blog with ID '%v': %v", blogID, err),
+		)
+	}
+	if res.DeletedCount == 0 {
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("Cannot find blog with ID '%v': %v", blogID, err),
+		)
+	}
+
+	return &blogpb.DeleteBlogResponse{
+		BlogId: blogID,
 	}, nil
 }
 
