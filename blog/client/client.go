@@ -22,21 +22,43 @@ func main() {
 
 	c := blogpb.NewBlogServiceClient(cc)
 
-	doCreate(c)
+	res := doCreate(c)
+
+	doRead(c, "doesNotExist")
+	doRead(c, res.GetBlog().GetId())
 }
 
-func doCreate(c blogpb.BlogServiceClient) {
+func doCreate(c blogpb.BlogServiceClient) *blogpb.CreateBlogResponse {
 	log.Println("Creating a blog")
 
-	blog := &blogpb.Blog{
-		AuthorId: "Vitor",
-		Title:    "My first blog",
-		Content:  "Content of the first blog",
+	req := &blogpb.CreateBlogRequest{
+		Blog: &blogpb.Blog{
+			AuthorId: "Vitor",
+			Title:    "My first blog",
+			Content:  "Content of the first blog",
+		},
 	}
 
-	res, err := c.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{Blog: blog})
+	res, err := c.CreateBlog(context.Background(), req)
 	if err != nil {
 		log.Fatalf("Unexpected error: %v", err)
 	}
 	log.Printf("Blog has been created: %v", res)
+
+	return res
+}
+
+func doRead(c blogpb.BlogServiceClient, blogID string) {
+	log.Println("Reading a blog")
+
+	req := &blogpb.ReadBlogRequest{
+		BlogId: blogID,
+	}
+
+	res, err := c.ReadBlog(context.Background(), req)
+	if err != nil {
+		log.Printf("Error happened while reading: %v", err)
+		return
+	}
+	log.Printf("Blog was read: %v", res)
 }
