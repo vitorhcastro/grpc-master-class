@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package blog;
+
 option go_package = "blogpb";
 
 message Blog {
@@ -10,4 +11,10 @@ message Blog {
   string content = 4;
 }
 
-service BlogService {}
+message CreateBlogRequest { Blog blog = 1; }
+
+message CreateBlogResponse { Blog blog = 1; }
+
+service BlogService {
+  rpc CreateBlog(CreateBlogRequest) returns (CreateBlogResponse);
+}
