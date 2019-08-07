@@ -22,21 +22,31 @@ func main() {
 
 	c := blogpb.NewBlogServiceClient(cc)
 
-	res := doCreate(c)
+	blog := &blogpb.Blog{
+		AuthorId: "Vitor",
+		Title:    "My first blog",
+		Content:  "Content of the first blog",
+	}
+
+	res := doCreate(c, blog)
 
 	doRead(c, "doesNotExist")
 	doRead(c, res.GetBlog().GetId())
+
+	newBlog := &blogpb.Blog{
+		Id:       res.GetBlog().GetId(),
+		AuthorId: "Vitor Castro",
+		Title:    "A better title for a blog",
+		Content:  "Content of the first blog with a little more content",
+	}
+	doUpdate(c, newBlog)
 }
 
-func doCreate(c blogpb.BlogServiceClient) *blogpb.CreateBlogResponse {
+func doCreate(c blogpb.BlogServiceClient, blog *blogpb.Blog) *blogpb.CreateBlogResponse {
 	log.Println("Creating a blog")
 
 	req := &blogpb.CreateBlogRequest{
-		Blog: &blogpb.Blog{
-			AuthorId: "Vitor",
-			Title:    "My first blog",
-			Content:  "Content of the first blog",
-		},
+		Blog: blog,
 	}
 
 	res, err := c.CreateBlog(context.Background(), req)
@@ -61,4 +71,18 @@ func doRead(c blogpb.BlogServiceClient, blogID string) {
 		return
 	}
 	log.Printf("Blog was read: %v", res)
+}
+
+func doUpdate(c blogpb.BlogServiceClient, blog *blogpb.Blog) {
+	log.Println("Updating a blog")
+
+	req := &blogpb.UpdateBlogRequest{
+		Blog: blog,
+	}
+
+	res, err := c.UpdateBlog(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Unexpected error: %v", err)
+	}
+	log.Printf("Blog has been updated: %v", res)
 }
